@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+  # Apache Service
+  apache:
+    build: "./.docker/apache"
+    restart: always
+    ports:
+      - 8000:80
+    volumes:
+      - ./webroot:/var/www/html/
+    depends_on:
+      - mysql
+      - php          
+    networks:
+      - frontend
+      - backend
+  # PHP Service
+  php:
+    build: "./.docker/php"
+    restart: always
+    volumes:
+    - ./webroot:/var/www/html/
+    networks:
+      - backend
+  # MySQL Service  
+  mysql:
+    image: mysql:5.6.48
+    env_file:
+      - ./.docker/mysql/mysql.env
+    networks:
+      - backend
+  # phpmyadmin Service
+  phpmyadmin:
+      image: phpmyadmin/phpmyadmin
+      environment:
+        - PMA_HOST=mysql
+        - PMA_prt=3306
+        - UPLOAD_LIMIT=3000000000 # this is for importing large existing db files
+      ports:
+        - 8080:80
+      networks:
+        - backend
+      depends_on:
+        - mysql       
+
+networks:
+  frontend:
+  backend:
