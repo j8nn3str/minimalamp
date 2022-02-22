@@ -22,6 +22,8 @@ Make a copy of `*.env.example` files and rename to `*.env` files. Populate defin
 ```
 docker-compose up -d --build
 ```
+### Acccess the environment
+Navigate to [http://localhost:8000](http://localhost:8000).
 
 ## Use cases
 #### WordPress
