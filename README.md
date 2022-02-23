@@ -1,15 +1,16 @@
 # minimalamp
 
-A bare minimum LAMP + phpmyadmin stack made with Docker containers. Intended for development purposes. Considerations for production purposes WIP.
+A bare minimum LAMP + phpmyadmin + traefik stack made with Docker containers. Intended for development purposes. Considerations for production purposes WIP.
 
 ## Composition
 
-| **Docker Image** | **Version** |
-| :----------: | :-----: |
-| Apache | 2.4.43-alpine |
-| PHP | 7.4.8-fpm-alpine3.12 |
-| MySQL | 5.6.48 |
-| phpmyadmin | -- |
+| **Docker Image** | **Version** | **Access**
+| :----------: | :-----: | :-----: |
+| Apache | 2.4.43-alpine | ```http://{your stack name}.localhost``` |
+| PHP | 7.4.8-fpm-alpine3.12 | --|
+| MySQL | 5.6.48 | -- |
+| phpmyadmin | -- | ```http://phpmyadmin.{your stack name}.localhost``` |
+| traefik | 2.2.8 | ```http://traefik.{your stack name}.localhost``` |
 
 ## Usage
 
@@ -22,8 +23,6 @@ Make a copy of `*.env.example` files and rename to `*.env` files. Populate defin
 ```
 docker-compose up -d --build
 ```
-### Acccess the environment
-Navigate to [http://localhost:8000](http://localhost:8000).
 
 ## Use cases
 #### WordPress
