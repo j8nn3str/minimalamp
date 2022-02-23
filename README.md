@@ -28,5 +28,5 @@ docker-compose up -d --build
 #### WordPress
 Works great for a local installation of WordPress!
 
-### Drupal
+## Drupal
 Maybe. Might need to install several other php extensions.
