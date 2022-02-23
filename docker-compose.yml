@@ -1,28 +1,51 @@
 version: "3.8"
 
 services:
+  # Traefik Service
+  traefik:
+    image: traefik:v2.2.8
+    command: --api.dashboard=true --providers.docker --accesslog=true
+    networks:
+      - webgateway
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /dev/null:/dyn-traefik.toml
+      - ./ssl:/ssl
+    labels:
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.${COMPOSE_PROJECT_NAME}.localhost`)"
+      - "traefik.http.middlewares.add-dash.addprefix.prefix=/dashboard"
+      - "traefik.http.routers.dashboard.service=api@internal"
+
   # Apache Service
   apache:
     build: "./.docker/apache"
     restart: always
-    ports:
-      - 8000:80
+    environment:
+      -  PHP_CONTAINER=php
+    labels:
+      - "traefik.backend=apache_${COMPOSE_PROJECT_NAME}"
+      - "traefik.docker.network=${COMPOSE_PROJECT_NAME}_webgateway"
+      - "traefik.http.routers.apache_${COMPOSE_PROJECT_NAME}.rule=Host(`${COMPOSE_PROJECT_NAME}.localhost`)"
     volumes:
-      - ./webroot:/var/www/html/
+      - /webroot/${COMPOSE_PROJECT_NAME}:/var/www/html/
     depends_on:
-      - mysql
-      - php          
+      - traefik     
     networks:
       - frontend
       - backend
+
   # PHP Service
   php:
     build: "./.docker/php"
     restart: always
     volumes:
-    - ./webroot:/var/www/html/
+    - /webroot/${COMPOSE_PROJECT_NAME}:/var/www/html/
     networks:
       - backend
+
   # MySQL Service  
   mysql:
     image: mysql:5.6.48
@@ -30,6 +53,7 @@ services:
       - ./.docker/mysql/mysql.env
     networks:
       - backend
+
   # phpmyadmin Service
   phpmyadmin:
       image: phpmyadmin/phpmyadmin
@@ -37,13 +61,20 @@ services:
         - PMA_HOST=mysql
         - PMA_prt=3306
         - UPLOAD_LIMIT=3000000000 # this is for importing large existing db files
-      ports:
-        - 8080:80
+      labels:
+        - "traefik.backend=phpmyadmin_${COMPOSE_PROJECT_NAME}"
+        - "traefik.docker.network=${COMPOSE_PROJECT_NAME}_webgateway"
+        - "traefik.http.routers.phpmyadmin_${COMPOSE_PROJECT_NAME}.rule=Host(`pma.${COMPOSE_PROJECT_NAME}.localhost`)"
       networks:
+        - frontend
         - backend
       depends_on:
         - mysql       
 
 networks:
   frontend:
+    external:
+      name: "${COMPOSE_PROJECT_NAME}_webgateway"
   backend:
+  webgateway:
+    driver: bridge
